@@ -1,6 +1,6 @@
 {
-  "name": "workspace-pack",
-  "version": "0.0.6",
+  "name": "@bubuntux/workspace-lambda-pack",
+  "version": "0.0.1",
   "description": "Build a deployable package from a Yarn workspace.",
   "files": [
     "bin/index.js",
@@ -14,14 +14,20 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ripeworks/workspace-pack.git"
+    "url": "git+https://github.com/bubuntux/workspace-pack.git"
   },
   "author": "Ripeworks <mike@ripeworks.com>",
   "license": "ISC",
+  "contributors": [
+    {
+      "name": "Julio Gutierrez",
+      "email": "bubuntux@gmail.com"
+    }
+  ],
   "bugs": {
-    "url": "https://github.com/ripeworks/workspace-pack/issues"
+    "url": "https://github.com/bubuntux/workspace-pack/issues"
   },
-  "homepage": "https://github.com/ripeworks/workspace-pack#readme",
+  "homepage": "https://github.com/bubuntux/workspace-pack#readme",
   "dependencies": {
     "archiver-promise": "^1.0.0",
     "fast-glob": "^2.1.0",
