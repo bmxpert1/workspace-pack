@@ -62,12 +62,11 @@ const buildDir = resolve(rootDir, args["build-dir"]);
 removeSync(buildDir);
 
 const main = async () => {
-    const packageName = pkg.name.replace("/", "-");
     let pkgTargetFolder = buildDir;
     let nodePrefixFolder = resolve(buildDir, "node_modules");
     if (args["layer"]) {
         nodePrefixFolder = resolve(buildDir, 'nodejs', "node_modules");
-        pkgTargetFolder = resolve(nodePrefixFolder, packageName);
+        pkgTargetFolder = resolve(nodePrefixFolder, pkg.name);
     }
 
     // copy package to build folder
@@ -93,7 +92,7 @@ const main = async () => {
         });
 
     // package into zip
-    const output = args['zip-name'] || `${packageName}.zip`;
+    const output = args['zip-name'] || `${pkg.name.replace("/", "-")}.zip`;
     const zip = archiver(resolve(rootDir, args['out-dir'], output), {
         store: true
     });
