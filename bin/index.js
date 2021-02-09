@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 
 const {resolve} = require("path");
-const {execSync} = require("child_process");
 const archiver = require("archiver-promise");
 const glob = require("fast-glob");
 const {existsSync, copySync, removeSync, ensureDirSync} = require("fs-extra");
@@ -12,11 +11,11 @@ const rootDir = process.cwd();
 const args = mri(process.argv.slice(2), {
     default: {
         "build-dir": "_build",
-        "build": true,
+        "out-dir": "dist",
         "layer": false
     },
-    string: ["build-dir", "output"],
-    boolean: ["build", "layer"],
+    string: ["build-dir", "out-dir", "zip-name"],
+    boolean: ["layer"],
 });
 
 const [folder] = args._;
@@ -94,12 +93,12 @@ const main = async () => {
         });
 
     // package into zip
-    const output = args.output || `${packageName}.zip`;
-    const zip = archiver(resolve(rootDir, output), {
-         store: true
-     });
-     zip.directory(buildDir, false);
-     await zip.finalize();
+    const output = args['zip-name'] || `${packageName}.zip`;
+    const zip = archiver(resolve(rootDir, args['out-dir'], output), {
+        store: true
+    });
+    zip.directory(buildDir, false);
+    await zip.finalize();
 
     // remove build folder
     removeSync(buildDir);

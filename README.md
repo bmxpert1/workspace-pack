@@ -24,4 +24,5 @@ $ workspace-pack my-package-folder
 | CLI arg       | Description                                                                                      |
 | ------------- | ------------------------------------------------------------------------------------------------ |
 | `--build-dir` | Specify where the prepared package is created before it is built and zipped. _Default: `_build`_ |
-| `--output`    | Where to store the resulting .zip file. _Default: `${package.name}.zip`_                         |
+| `--out-dir`   | Directory of the resulting .zip file. _Default: `dir`_                         |
+| `--zip-name`  | Name of the resulting .zip file. _Default: `${package.name}.zip`_                         |
