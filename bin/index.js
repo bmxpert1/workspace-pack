@@ -63,19 +63,17 @@ const buildDir = resolve(rootDir, args["build-dir"]);
 removeSync(buildDir);
 
 const main = async () => {
-    // copy package to build folder
-    copySync(resolve(rootDir, pkgDir), buildDir);
-    ensureDirSync(resolve(rootDir, pkgDir, "node_modules"));
-
-    // build
-    if (args["build"] && pkg.scripts && pkg.scripts.build) {
-        try {
-            execSync("yarn build", {cwd: buildDir});
-        } catch (buildError) {
-            console.log(buildError.output.toString())
-            throw buildError;
-        }
+    const packageName = pkg.name.replace("/", "-");
+    let pkgTargetFolder = buildDir;
+    let nodePrefixFolder = resolve(buildDir, "node_modules");
+    if (args["layer"]) {
+        nodePrefixFolder = resolve(buildDir, 'nodejs', "node_modules");
+        pkgTargetFolder = resolve(nodePrefixFolder, packageName);
     }
+
+    // copy package to build folder
+    copySync(resolve(rootDir, pkgDir), pkgTargetFolder);
+    ensureDirSync(resolve(rootDir, pkgDir, "node_modules"));
 
     // resolve dependencies
     const deps = await resolveDependencies(pkg.dependencies, localModules, [resolve("node_modules"), resolve(rootDir, pkgDir, "node_modules")]);
@@ -90,26 +88,18 @@ const main = async () => {
             const dir = resolve(rootDir, "node_modules", dirName);
             if (!existsSync(dir)) return;
 
-            copySync(dir, resolve(buildDir, "node_modules", dirName), {
+            copySync(dir, resolve(nodePrefixFolder, dirName), {
                 dereference: true
             });
         });
 
     // package into zip
-    let prefix = '';
-    if (args["layer"]) {
-        prefix = 'nodejs/';
-        if (!file.startsWith("node_modules")) {
-            prefix += `node_modules/${packageName}/`;
-        }
-    }
-    const output = args.output || `${pkg.name.replace("/", "-")}.zip`;
+    const output = args.output || `${packageName}.zip`;
     const zip = archiver(resolve(rootDir, output), {
-        store: true,
-        prefix
-    });
-    zip.directory(buildDir, false);
-    await zip.finalize();
+         store: true
+     });
+     zip.directory(buildDir, false);
+     await zip.finalize();
 
     // remove build folder
     removeSync(buildDir);

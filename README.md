@@ -9,7 +9,7 @@ If you use Yarn's `workspaces` feature to manage a monorepo, but need to "pack" 
 ## Install
 
 ```
-$ yarn global add workspace-pack
+$ yarn global add @bubuntux/workspace-lambda-pack
 ```
 
 ## Usage
