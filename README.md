@@ -18,11 +18,18 @@ $ yarn global add @bubuntux/workspace-lambda-pack
 # In your workspaces root dir
 $ workspace-pack my-package-folder
 ```
+or
+```bash
+# In your workspace dir
+$ workspace-pack --root-dir=../../
+```
+
 
 ## Options
 
 | CLI arg       | Description                                                                                      |
 | ------------- | ------------------------------------------------------------------------------------------------ |
+| `--root-dir`  | Specify where the root package with the workspaces is located (useful when executing from the workspace) |
 | `--build-dir` | Specify where the prepared package is created before it is built and zipped. _Default: `_build`_ |
 | `--out-dir`   | Directory of the resulting .zip file. _Default: `dir`_                         |
 | `--zip-name`  | Name of the resulting .zip file. _Default: `${package.name}.zip`_                         |

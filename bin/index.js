@@ -7,22 +7,18 @@ const {existsSync, copySync, removeSync, ensureDirSync} = require("fs-extra");
 const mri = require("mri");
 const resolveDependencies = require("../lib/resolveDependencies");
 
-const rootDir = process.cwd();
 const args = mri(process.argv.slice(2), {
     default: {
+        "root-dir": process.cwd(),
         "build-dir": "_build",
         "out-dir": "dist",
         "layer": false
     },
-    string: ["build-dir", "out-dir", "zip-name"],
+    string: ["root-dir", "build-dir", "out-dir", "zip-name"],
     boolean: ["layer"],
 });
 
-const [folder] = args._;
-
-if (!folder) {
-    throw new Error("Please supply a folder");
-}
+let rootDir = args["root-dir"];
 
 const workspacePkg = require(resolve(rootDir, "package.json"));
 if (!workspacePkg.workspaces) {
@@ -41,13 +37,23 @@ const localPackages = glob.sync(Array.isArray(workspacePkg.workspaces) ? workspa
     cwd: rootDir,
     onlyDirectories: true
 });
-const pkgDir = localPackages.find(dir => dir.split("/").pop() === folder);
+
+let pkgDir;
+const [folder] = args._;
+if (folder) {
+    pkgDir = localPackages.find(dir => dir.split("/").pop() === folder);
+} else {
+    pkgDir = process.cwd();
+}
 
 if (!pkgDir) {
     throw new Error(`Folder \`${folder}\` was not found.`);
 }
 
 const pkg = require(resolve(rootDir, pkgDir, "package.json"));
+if (!pkg) {
+    throw new Error(`package.json \`${resolve(rootDir, pkgDir, "package.json")}\` was not found.`);
+}
 
 const localModules = [];
 for (const dir of localPackages) {
