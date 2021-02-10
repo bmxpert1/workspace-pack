@@ -80,7 +80,6 @@ const main = async () => {
     deps
         .filter((value, index, self) => self.indexOf(value) === index)
         .map(dep => {
-            console.log(dep)
             const versionIndex = dep.lastIndexOf("@");
             const dirName = versionIndex <= 0 ? dep : dep.substr(0, versionIndex);
             const dir = resolve(rootDir, "node_modules", dirName);
@@ -92,12 +91,14 @@ const main = async () => {
         });
 
     // package into zip
+    const outDir = resolve(rootDir, args['out-dir']);
+    ensureDirSync(outDir);
     const output = args['zip-name'] || `${pkg.name.replace("/", "-")}.zip`;
-    const zip = archiver(resolve(rootDir, args['out-dir'], output), {
-        store: true
-    });
+    const zipFile = resolve(outDir, output);
+    const zip = archiver(zipFile, {store: true});
     zip.directory(buildDir, false);
     await zip.finalize();
+    console.log(`Zip created ${zipFile}`)
 
     // remove build folder
     removeSync(buildDir);
