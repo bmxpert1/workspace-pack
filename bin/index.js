@@ -3,7 +3,7 @@
 const {resolve} = require("path");
 const archiver = require("archiver-promise");
 const glob = require("fast-glob");
-const {existsSync, copySync, removeSync, ensureDirSync} = require("fs-extra");
+const {existsSync, copySync, removeSync, ensureDirSync, readdirSync, readlinkSync} = require("fs-extra");
 const mri = require("mri");
 const resolveDependencies = require("../lib/resolveDependencies");
 
@@ -12,10 +12,11 @@ const args = mri(process.argv.slice(2), {
         "root-dir": process.cwd(),
         "build-dir": "_build",
         "out-dir": "dist",
-        "layer": false
+        "layer": false,
+        "archive": true,
     },
     string: ["root-dir", "build-dir", "out-dir", "zip-name"],
-    boolean: ["layer"],
+    boolean: ["layer", "archive"],
 });
 
 let rootDir = args["root-dir"];
@@ -66,6 +67,8 @@ for (const dir of localPackages) {
 
 const buildDir = resolve(rootDir, args["build-dir"]);
 removeSync(buildDir);
+const outDir = resolve(rootDir, args['out-dir']);
+removeSync(outDir);
 
 const main = async () => {
     let pkgTargetFolder = buildDir;
@@ -96,15 +99,36 @@ const main = async () => {
             });
         });
 
-    // package into zip
-    const outDir = resolve(rootDir, args['out-dir']);
+    // copy root .bin folder
+    const rootBinFolder = resolve(rootDir, "node_modules", ".bin");
+    const pkgTargetBinFolder = resolve(nodePrefixFolder, ".bin");
+    if (existsSync(rootBinFolder)) {
+        ensureDirSync(pkgTargetBinFolder);
+
+        readdirSync(rootBinFolder).forEach(ln => {
+            // figure out if this link could possibly resolve in its new home
+            if (existsSync(resolve(pkgTargetBinFolder, readlinkSync(resolve(rootBinFolder, ln))))) {
+                copySync(resolve(rootBinFolder, ln), resolve(pkgTargetBinFolder, ln), {
+                    dereference: false
+                });
+            }
+        });
+    }
+
     ensureDirSync(outDir);
-    const output = args['zip-name'] || `${pkg.name.replace("/", "-")}.zip`;
-    const zipFile = resolve(outDir, output);
-    const zip = archiver(zipFile, {store: true});
-    zip.directory(buildDir, false);
-    await zip.finalize();
-    console.log(`Zip created ${zipFile}`)
+    if (args["archive"]) {
+        // package into zip
+        const output = args['zip-name'] || `${pkg.name.replace("/", "-")}.zip`;
+        const zipFile = resolve(outDir, output);
+        const zip = archiver(zipFile, {store: true});
+        zip.directory(buildDir, false);
+        await zip.finalize();
+        console.log(`Zip created ${zipFile}`)
+    } else {
+        // copy to out-dir
+        copySync(buildDir, outDir)
+        console.log('Dist created');
+    }
 
     // remove build folder
     removeSync(buildDir);
